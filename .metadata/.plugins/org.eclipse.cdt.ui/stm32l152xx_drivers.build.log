@@ -1,0 +1,22 @@
+16:00:03 **** Build of configuration Debug for project stm32l152xx_drivers ****
+make -j16 all 
+arm-none-eabi-gcc "../drivers/Src/stm32l152xx_gpio_driver.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DNUCLEO_L152RE -DSTM32L1 -DSTM32 -DSTM32L152RETx -c -I"C:/Users/YoussefElbattah/Documents/STM32 projects/stm32l152xx_drivers/drivers/Inc" -I../Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"drivers/Src/stm32l152xx_gpio_driver.d" -MT"drivers/Src/stm32l152xx_gpio_driver.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "drivers/Src/stm32l152xx_gpio_driver.o"
+arm-none-eabi-gcc "../drivers/Src/stm32l152xx_spi_driver.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DNUCLEO_L152RE -DSTM32L1 -DSTM32 -DSTM32L152RETx -c -I"C:/Users/YoussefElbattah/Documents/STM32 projects/stm32l152xx_drivers/drivers/Inc" -I../Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"drivers/Src/stm32l152xx_spi_driver.d" -MT"drivers/Src/stm32l152xx_spi_driver.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "drivers/Src/stm32l152xx_spi_driver.o"
+arm-none-eabi-gcc -mcpu=cortex-m3 -g3 -DDEBUG -c -x assembler-with-cpp -MMD -MP -MF"Startup/startup_stm32l152retx.d" -MT"Startup/startup_stm32l152retx.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Startup/startup_stm32l152retx.o" "../Startup/startup_stm32l152retx.s"
+arm-none-eabi-gcc "../Src/010spi_ctrl_cmd_slave.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DNUCLEO_L152RE -DSTM32L1 -DSTM32 -DSTM32L152RETx -c -I"C:/Users/YoussefElbattah/Documents/STM32 projects/stm32l152xx_drivers/drivers/Inc" -I../Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/010spi_ctrl_cmd_slave.d" -MT"Src/010spi_ctrl_cmd_slave.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Src/010spi_ctrl_cmd_slave.o"
+arm-none-eabi-gcc "../Src/syscalls.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DNUCLEO_L152RE -DSTM32L1 -DSTM32 -DSTM32L152RETx -c -I"C:/Users/YoussefElbattah/Documents/STM32 projects/stm32l152xx_drivers/drivers/Inc" -I../Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/syscalls.d" -MT"Src/syscalls.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Src/syscalls.o"
+arm-none-eabi-gcc "../Src/sysmem.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DNUCLEO_L152RE -DSTM32L1 -DSTM32 -DSTM32L152RETx -c -I"C:/Users/YoussefElbattah/Documents/STM32 projects/stm32l152xx_drivers/drivers/Inc" -I../Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/sysmem.d" -MT"Src/sysmem.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Src/sysmem.o"
+arm-none-eabi-gcc -o "stm32l152xx_drivers.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\YoussefElbattah\Documents\STM32 projects\stm32l152xx_drivers\STM32L152RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32l152xx_drivers.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: stm32l152xx_drivers.elf
+ 
+arm-none-eabi-size  stm32l152xx_drivers.elf 
+arm-none-eabi-objdump -h -S stm32l152xx_drivers.elf  > "stm32l152xx_drivers.list"
+   text	   data	    bss	    dec	    hex	filename
+   3084	      8	   1568	   4660	   1234	stm32l152xx_drivers.elf
+Finished building: default.size.stdout
+ 
+Finished building: stm32l152xx_drivers.list
+ 
+
+16:00:04 Build Finished. 0 errors, 0 warnings. (took 1s.6ms)
+

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;DHT22/Core/Inc/lib-lcd.h&apos; to &apos;lib_lcd.h&apos;" description="Rename resource &apos;lib-lcd.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Inc/lib-lcd.h" name="lib_lcd.h" stamp="1707587738782" updateReferences="true"/>
+</session>

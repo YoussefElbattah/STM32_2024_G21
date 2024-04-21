@@ -1,0 +1,10 @@
+10:43:30 **** Incremental Build of configuration Debug for project DHT22 ****
+make -j8 all 
+arm-none-eabi-size   DHT22.elf 
+   text	   data	    bss	    dec	    hex	filename
+  34556	    484	   1980	  37020	   909c	DHT22.elf
+Finished building: default.size.stdout
+ 
+
+10:43:30 Build Finished. 0 errors, 0 warnings. (took 461ms)
+

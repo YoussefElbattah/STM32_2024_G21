@@ -1,0 +1,147 @@
+/*
+ * 010spi_ctrl_cmd_slave.c
+ *
+ *  Created on: Mar 3, 2024
+ *      Author: YoussefElbattah
+ */
+
+
+/* PB12 	--> NSS
+ * PB13		--> SCK
+ * PB14		--> MISO
+ * PB15  	--> MOSI
+ * alt func mode : 5
+ */
+
+
+#include "stm32l152xx.h"
+#include <string.h>
+
+enum{
+	CTRL_LED = 0x01,
+	CTRL_MSG,
+	CTRL_INFO
+};
+
+void delay(void){
+	for(uint32_t i = 0; i < 50000 ; i++);
+}
+
+void GPIO_ButtonInit(void){
+	GPIO_Handle_t GPIO_Button;
+	memset(&GPIO_Button,0,sizeof(GPIO_Button));
+	GPIO_Button.pGPIOx = GPIOC;
+	GPIO_Button.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
+	GPIO_Button.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IT_FT;
+	GPIO_Button.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+	GPIO_Button.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+
+	GPIO_Init(&GPIO_Button);
+}
+
+void GPIO_LedInit(void){
+
+	GPIO_Handle_t GPIO_Led;
+	// I used this because the address of GPIOA in stm32l476rg is not the same as STM32L152RE
+	GPIO_Led.pGPIOx = (GPIO_RegDef_t*)0x48000000U;
+	GPIO_Led.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_5;
+	GPIO_Led.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
+	GPIO_Led.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+	GPIO_Led.GPIO_PinConfig.GPIO_PinOPType = GPIO_OP_TYPE_PP;
+	GPIO_Led.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+
+	GPIO_Init(&GPIO_Led);
+}
+void SPI2_GPIOInits(void){
+	GPIO_Handle_t SPIPins;
+	SPIPins.pGPIOx = GPIOB;
+	SPIPins.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_ALTFN;
+	SPIPins.GPIO_PinConfig.GPIO_PinAltFuncMode = GPIO_AF5;
+	SPIPins.GPIO_PinConfig.GPIO_PinOPType = GPIO_OP_TYPE_PP;
+	SPIPins.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+	SPIPins.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+
+	//NSS
+	SPIPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_12;
+	GPIO_Init(&SPIPins);
+
+	//SCK
+	SPIPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
+	GPIO_Init(&SPIPins);
+
+	//MISO
+	SPIPins->GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_14;
+	GPIO_Init(SPIPins);
+
+	//MOSI
+	SPIPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_15;
+	GPIO_Init(&SPIPins);
+}
+void SPI2_Inits(void){
+	SPI_Handle_t SPI2handle;
+	SPI2handle.pSPIx = SPI2;
+	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
+	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_SLAVE;
+	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BITS;
+	SPI2handle.SPIConfig.SPI_SSM = SPI_SSM_EN;
+
+	SPI_Init(&SPI2handle);
+
+}
+
+void Clock_Init(void){
+	RCC_RegDef_t *RCC_Configure ;
+	RCC_Configure = RCC;
+
+	RCC_Configure->CFGR |= (1 << 0);
+	// Enable HSI Clock
+	RCC_Configure->CR |= (1 << 0);
+	RCC_Configure->CR &= ~(1 << 8);
+}
+int main(){
+
+	uint8_t pin_number, port;
+	uint8_t rx_buf[13];
+	uint8_t type_cmd;
+	uint8_t ack = 0xA0;
+
+	Clock_Init();
+	//this function is used to initialize the GPIO pin for button
+	GPIO_ButtonInit();
+
+	//this function is used to initialize the GPIO pin for led
+	GPIO_LedInit();
+
+	//this function is used to initialize the GPIO pins to behave as SPI2 pins
+	SPI2_GPIOInits();
+
+	//this function is used to initialize the SPI2 peripheral parameters
+	SPI2_Inits();
+
+	SPI_SSIConfig(SPI2, DISABLE);
+
+	while(1){
+		//enable the SPI2 peripheral
+		SPI_PeripheralControl(SPI2, ENABLE);
+		SPI_ReceiveData(SPI2, &type_cmd, 1);
+
+		SPI_SendData(SPI2, &ack, 1);
+
+		if(type_cmd == 1){
+			SPI_ReceiveData(SPI2, &port, 1);
+			SPI_ReceiveData(SPI2, &pin_number, 1);
+			GPIO_ToggleOutputPin(GPIOA, pin_number);
+		}else{
+			SPI_ReceiveData(SPI2, rx_buf, strlen((char*)rx_buf));
+		}
+
+		//lets confirm SPI is not busy
+		while(SPI_GetFlagStatus(SPI2, SPI_BSY_FLAG));
+
+		SPI_PeripheralControl(SPI2, ENABLE);
+	}
+
+
+}
+
+

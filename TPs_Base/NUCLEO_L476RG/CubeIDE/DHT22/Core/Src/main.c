@@ -1,0 +1,306 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "i2c.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "lib_lcd.h"
+#include <stdio.h>
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+rgb_lcd lcd_display;
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+void Set_Pin_Output (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin = GPIO_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
+}
+
+void Set_Pin_Input (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin = GPIO_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
+}
+void delay (uint16_t temps)
+{
+	__HAL_TIM_SET_COUNTER(&htim1,0);  // Initialiser le compteur par 0
+	while (__HAL_TIM_GET_COUNTER(&htim1) < temps);  // Attendre jusqu'a ce que le timer atteint la valeur determiner en entrée
+}
+
+void Demarrer_DHT22 (void)
+{
+	Set_Pin_Output(GPIOA,GPIO_PIN_10); // Mettre le pin en sortie
+	HAL_GPIO_WritePin (GPIOA, GPIO_PIN_10, 0);   // Mettre le pin en état bas
+	HAL_Delay(1);   // wait for > 1ms
+
+	HAL_GPIO_WritePin (GPIOA, GPIO_PIN_10, 1);   // Mettre le pin en état haut
+	delay (35);   // wait for 30us
+
+	Set_Pin_Input(GPIOA, GPIO_PIN_10);   // Mettre le pin en entrée
+}
+
+uint8_t Verifier_Reponse_DHT22 (void)
+{
+	Set_Pin_Input(GPIOA, GPIO_PIN_10);  // Mettre le pin en entrée
+	uint8_t Reponse = 0;
+	delay (30);  // wait for 40us
+	if (!(HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_10))) // Si le pin est à 0
+	{
+		delay (80);   // wait for 80us
+
+		if ((HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_10))) Reponse = 1;  // Si le pin est à 1, la réponse est 1
+		else Reponse = -1; // Sinon la réponse est NOK
+	}
+
+	while ((HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_10)));   // Attendre jusqu'a ce que le pin passe à 0
+	return Reponse;
+}
+
+uint8_t Valeur_DHT22 (void)
+{
+	uint8_t valeur,j;
+	for (j=0;j<8;j++)
+	{
+		while (!(HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_10)));   // Attendre jusqu'a ce que le pin soit 1 pour commencer la lecture
+		delay (40);   // Attendre 40 µs
+
+		if (!(HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_10)))   // Si le pin est 0V
+		{
+			valeur &= ~(1<<(7-j));   // Remplir l'octet par 0
+		}
+		else valeur |= (1<<(7-j));  // Si le pin est à 1, Remplir l'octet par 1
+		while ((HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_10)));  // Attendre jusqu'a ce que le pin soit 1
+	}
+
+	return valeur;
+}
+uint8_t Rh_byte1, Rh_byte2, Temp_byte1, Temp_byte2;
+uint16_t SUM, RH, TEMP;
+
+float Temperature = 0;
+float Humidity = 0;
+uint8_t Etat = 0;
+char temperature[20],humidity[20];
+char RH_octet1[20],RH_octet2[20];
+char TEMP_octet1[20],TEMP_octet2[20];
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+  /* USER CODE BEGIN 1 */
+	RCC->AHB2ENR = (1 << 0);
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USART2_UART_Init();
+  MX_TIM1_Init();
+  MX_I2C1_Init();
+  /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim1);
+  lcd_init(&hi2c1,&lcd_display);
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+	  Demarrer_DHT22();
+	  Etat = Verifier_Reponse_DHT22();
+	  Rh_byte1 = Valeur_DHT22 ();
+      Rh_byte2 = Valeur_DHT22 ();
+	  Temp_byte1 = Valeur_DHT22 ();
+	  Temp_byte2 = Valeur_DHT22 ();
+	  SUM = Valeur_DHT22();
+
+	  TEMP = ((Temp_byte1<<8)|Temp_byte2);
+	  RH = ((Rh_byte1<<8)|Rh_byte2);
+
+	 //Temperature = (float) (TEMP/10.0);
+	  //Humidity = (float)(RH/10.0);
+	  //lcd_position(&hi2c1,0, 0);
+	  //snprintf(temperature, sizeof(temperature), "%d", TEMP);
+	  //snprintf(humidity, sizeof(humidity), "%d", RH);
+	  snprintf(RH_octet1, sizeof(RH_octet1), "Hum_byte_1 = %u \n", Rh_byte1);
+	  snprintf(RH_octet2, sizeof(RH_octet2), "Hum_byte_2 = %u \n", Rh_byte2);
+	  snprintf(TEMP_octet1, sizeof(TEMP_octet1), "Temp_byte_1 = %u \n", Temp_byte1);
+	  snprintf(TEMP_octet2, sizeof(TEMP_octet2), "Temp_byte_2 = %u \n", Temp_byte2);
+	  /*lcd_position(&hi2c1, 0, 0);
+	  lcd_print(&hi2c1, "Temp = ");
+	  lcd_print(&hi2c1, temperature);
+	  lcd_print(&hi2c1, " C");
+	  lcd_position(&hi2c1, 0, 1);
+	  lcd_print(&hi2c1, "Hum = ");
+	  lcd_print(&hi2c1, humidity);
+	  lcd_print(&hi2c1, " %");*/
+
+	  HAL_UART_Transmit(&huart2, (uint8_t*)RH_octet1, sizeof(RH_octet1), 1000);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)RH_octet2, sizeof(RH_octet2), 1000);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)TEMP_octet1, sizeof(TEMP_octet1), 1000);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)TEMP_octet2, sizeof(TEMP_octet2), 1000);
+	  HAL_Delay(1000);
+
+  }
+  /* USER CODE END 3 */
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Configure the main internal regulator output voltage
+  */
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 1;
+  RCC_OscInitStruct.PLL.PLLN = 9;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+#ifdef  USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
