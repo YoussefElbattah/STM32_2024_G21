@@ -1,0 +1,12 @@
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:66:6:MX_MEMS_Init	8	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:87:6:MX_MEMS_Process	8	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:104:6:MX_IKS01A3_DataLogTerminal_Init_G21	24	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:150:6:BSP_PB_Callback	16	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:159:6:MX_IKS01A3_DataLogTerminal_Process_G21	88	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:200:13:floatToInt	32	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:224:13:Accelero_Sensor_Handler_G21	40	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:269:13:Temp_Sensor_Handler_G21	40	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:295:13:Press_Sensor_Handler_G21	40	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:322:13:Hum_Sensor_Handler_G21	40	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:343:13:lora_init	1032	static
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/app_mems.c:351:13:lora_send	1048	static

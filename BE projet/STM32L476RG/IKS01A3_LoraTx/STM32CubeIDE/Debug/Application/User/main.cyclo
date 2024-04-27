@@ -1,0 +1,5 @@
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/main.c:67:5:main	1
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/main.c:113:6:SystemClock_Config	4
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/main.c:163:13:MX_USART1_UART_Init	2
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/main.c:198:13:MX_GPIO_Init	1
+C:/Users/YoussefElbattah/Documents/STM32 projects/STM32_2024_G21/BE projet/STM32L476RG/IKS01A3_LoraTx/Src/main.c:247:6:Error_Handler	1

@@ -1,0 +1,10 @@
+17:45:43 **** Incremental Build of configuration Debug for project IKS01A3_LoraTx ****
+make -j16 all 
+arm-none-eabi-size  IKS01A3_LoraTx.elf 
+   text	   data	    bss	    dec	    hex	filename
+  78592	    904	   3176	  82672	  142f0	IKS01A3_LoraTx.elf
+Finished building: default.size.stdout
+ 
+
+17:45:43 Build Finished. 0 errors, 0 warnings. (took 572ms)
+
