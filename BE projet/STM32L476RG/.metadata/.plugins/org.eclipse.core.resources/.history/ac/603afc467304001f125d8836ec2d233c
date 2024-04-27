@@ -345,10 +345,10 @@ static void lora_init(void){
 	char response[1000] = "";
 	HAL_UART_Transmit(&huart1, (uint8_t*)command1, strlen(command1), 1000);
 	HAL_UART_Receive(&huart1, (uint8_t*)response, sizeof(response), 1000);
+	HAL_UART_Transmit(&huart2, (uint8_t*)response, strlen(response), 1000);
 }
 
 static void lora_send(char *dataSend){
-	lora_init();
 	char command2[] = "AT+TEST=TXLRPKT," ;
 	char response[1000] = "";
 	HAL_UART_Transmit(&huart1, (uint8_t*)command2, strlen(command2), 1000);

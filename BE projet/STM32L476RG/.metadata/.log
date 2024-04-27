@@ -95,3 +95,18 @@ org.eclipse.core.runtime.CoreException: Setup exceptions
 
 !ENTRY com.st.stm32cube.ide.mcu.debug 4 0 2024-04-27 10:26:33.977
 !MESSAGE Existing sessions are:
+!SESSION 2024-04-27 10:49:49.827 -----------------------------------------------
+eclipse.buildId=Version 1.14.1
+java.version=17.0.8.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=fr_FR
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2024-04-27 10:49:57.943
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2024-04-27 10:49:57.945
+!MESSAGE Log4j2 initialized with config file C:\Users\YoussefElbattah\Documents\STM32 projects\STM32_2024_G21\BE projet\STM32L476RG\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-04-27 10:50:06.178
+!MESSAGE Started RMI Server, listening on port 41337
