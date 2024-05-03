@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
+#include <lcd_lib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +34,7 @@ typedef struct{
 	char acc_z[4];
 	char temperature[7];
 	char humidity[6];
-	char pressure[7];
+	char pressure[8];
 }data;
 /* USER CODE END PTD */
 
@@ -48,6 +49,8 @@ typedef struct{
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
@@ -60,18 +63,22 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 void lora_init(void);
 void lora_receive(void);
 void data_decode(data *data_decode);
 void trame_decode(void);
 void display_serial_data(data data_display);
+void display_lcd_data(data data_display);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 char response[1000] = "";
 char trame_decodee[50] = "";
+rgb_lcd lcd;
+
 /* USER CODE END 0 */
 
 /**
@@ -105,8 +112,16 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   lora_init();
+  lcd_init(&hi2c1, &lcd);
+  lcd_position(&hi2c1,0,0);
+  lcd_print(&hi2c1, " x  |  y   |  z ");
+  lcd_position(&hi2c1, 0, 1);
+  lcd_print(&hi2c1, "temp | hum | pre");
+  HAL_Delay(1000);
+  clearlcd();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,8 +137,8 @@ int main(void)
 		  trame_decode();
 		  data_decode(&data_decodee);
 		  display_serial_data(data_decodee);
+		  display_lcd_data(data_decodee);
 	  }
-	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
@@ -175,6 +190,54 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x10909CEC;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -316,31 +379,62 @@ void trame_decode(void){
 }
 
 void data_decode(data *data_decode){
-	snprintf(data_decode->acc_x, 4, "%c%c",(trame_decodee[0] == '2') ? '+' : '-',
-											  trame_decodee[1]);
+	size_t taille = strlen(trame_decodee);
+	if(taille>20){
 
-	snprintf(data_decode->acc_y, 4, "%c%c",(trame_decodee[2] == '2') ? '+' : '-',
-											  trame_decodee[3]);
+		snprintf(data_decode->acc_x, 4, "%c%c",(trame_decodee[1] == '2') ? '+' : '-',
+													  trame_decodee[2]);
 
-	snprintf(data_decode->acc_z, 4, "%c%c",(trame_decodee[4] == '2') ? '+' : '-',
-											  trame_decodee[5]);
+		snprintf(data_decode->acc_y, 4, "%c%c",(trame_decodee[3] == '2') ? '+' : '-',
+												  trame_decodee[4]);
 
-	snprintf(data_decode->temperature, 7, "%c%c%c,%c%c",(trame_decodee[6] == '2') ? '+' : '-',
-												trame_decodee[7],
-											  trame_decodee[8],
-										   	  trame_decodee[9],
-											  trame_decodee[10]);
+		snprintf(data_decode->acc_z, 4, "%c%c",(trame_decodee[5] == '2') ? '+' : '-',
+												  trame_decodee[6]);
 
-	snprintf(data_decode->humidity, 6, "%c%c,%c%c",trame_decodee[11],
-											  trame_decodee[12],
-											  trame_decodee[13],
-											  trame_decodee[14]);
+		snprintf(data_decode->temperature, 7, "%c%c%c,%c%c",(trame_decodee[7] == '2') ? '+' : '-',
+													trame_decodee[8],
+												  trame_decodee[9],
+												  trame_decodee[10],
+												  trame_decodee[11]);
 
-	snprintf(data_decode->pressure, 7, "%c%c%c,%c%c",trame_decodee[15],
+			snprintf(data_decode->humidity, 6, "%c%c,%c%c",trame_decodee[12],
+													  trame_decodee[13],
+													  trame_decodee[14],
+													  trame_decodee[15]);
+		snprintf(data_decode->pressure, 8, "%c%c%c%c,%c%c",trame_decodee[16],
+													  trame_decodee[17],
+													  trame_decodee[18],
+													  trame_decodee[19],
+													  trame_decodee[20],
+													  trame_decodee[21]);
+	}
+	else{
+		snprintf(data_decode->acc_x, 4, "%c%c",(trame_decodee[0] == '2') ? '+' : '-',
+													  trame_decodee[1]);
+
+			snprintf(data_decode->acc_y, 4, "%c%c",(trame_decodee[2] == '2') ? '+' : '-',
+													  trame_decodee[3]);
+
+			snprintf(data_decode->acc_z, 4, "%c%c",(trame_decodee[4] == '2') ? '+' : '-',
+													  trame_decodee[5]);
+
+			snprintf(data_decode->temperature, 7, "%c%c%c,%c%c",(trame_decodee[6] == '2') ? '+' : '-',
+														trame_decodee[7],
+													  trame_decodee[8],
+												   	  trame_decodee[9],
+													  trame_decodee[10]);
+
+			snprintf(data_decode->humidity, 6, "%c%c,%c%c",trame_decodee[11],
+													  trame_decodee[12],
+													  trame_decodee[13],
+													  trame_decodee[14]);
+		snprintf(data_decode->pressure, 7, "%c%c%c,%c%c",trame_decodee[15],
 											  trame_decodee[16],
 											  trame_decodee[17],
 											  trame_decodee[18],
 											  trame_decodee[19]);
+	}
+
 
 }
 
@@ -355,6 +449,40 @@ void display_serial_data(data data_display){
 												  data_display.pressure);
 	HAL_UART_Transmit(&huart2, (uint8_t*)data_out,110 , 1000);
 	HAL_UART_Transmit(&huart2, (uint8_t*)"\n---------------------------------------\n",44 , 1000);
+}
+
+void display_lcd_data(data data_display){
+	char data_out[256] = "";
+	snprintf(data_out, 113, "%s | %s | %s",data_display.acc_x,
+										  data_display.acc_y,
+										  data_display.acc_z);
+	lcd_position(&hi2c1, 2, 0);
+	lcd_print(&hi2c1, data_out);
+	size_t taille = strlen(trame_decodee);
+	if(taille>20){
+		snprintf(data_out, 113, "%c%c%c | %c%c | %c%c%c%c",data_display.temperature[0],
+																		data_display.temperature[1],
+																		data_display.temperature[2],
+																		  data_display.humidity[0],
+																		  data_display.humidity[1],
+																		  data_display.pressure[0],
+																		  data_display.pressure[1],
+																		  data_display.pressure[2],
+																		  data_display.pressure[3]);
+		}
+		else{
+			snprintf(data_out, 113, "%c%c%c | %c%c | %c%c%c ",data_display.temperature[0],
+																	data_display.temperature[1],
+																	data_display.temperature[2],
+																	  data_display.humidity[0],
+																	  data_display.humidity[1],
+																	  data_display.pressure[0],
+																	  data_display.pressure[1],
+																	  data_display.pressure[2]);
+		}
+	lcd_position(&hi2c1, 0, 1);
+	lcd_print(&hi2c1, data_out);
+
 }
 /* USER CODE END 4 */
 
